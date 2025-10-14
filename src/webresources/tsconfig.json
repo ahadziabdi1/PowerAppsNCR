@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "none",
+    "lib": ["es6", "dom"],
+    "outDir": "./dist",
+    "removeComments": true,
+    "noImplicitAny": false
+  },
+  "include": ["src/**/*"]
+}

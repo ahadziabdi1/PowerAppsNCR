@@ -3,6 +3,7 @@
     "target": "es5",
     "module": "none",
     "lib": ["es6", "dom"],
+    "types": ["xrm"], 
     "outDir": "./dist",
     "removeComments": true,
     "noImplicitAny": false

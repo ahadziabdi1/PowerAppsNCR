@@ -6,7 +6,8 @@
     "types": ["xrm"], 
     "outDir": "./dist",
     "removeComments": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "strict": false
   },
   "include": ["src/**/*"]
 }

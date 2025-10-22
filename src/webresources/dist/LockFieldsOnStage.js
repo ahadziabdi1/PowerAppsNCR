@@ -19,48 +19,65 @@ var NCRLock;
     function showGuidanceMessage(formContext, stageName) {
         clearGuidanceMessages(formContext);
         var message = "";
-        var messageType = "INFO";
         switch (stageName) {
             case "Report":
                 message = "REPORT STAGE: Fill in Name, NC Type, Description, Reported By, and Assigned Manager.";
-                messageType = "INFO";
                 break;
             case "Investigate":
                 message = "INVESTIGATE STAGE: Set Priority and Status (required). Additional fields appear based on NC Type.";
-                messageType = "INFO";
                 break;
             case "Resolve":
                 message = "RESOLVE STAGE: Provide Resolution Notes (required) to document the corrective actions taken.";
-                messageType = "INFO";
                 break;
             case "Close":
                 message = "CLOSE STAGE: Update Status to 'Closed' and verify all information is complete.";
-                messageType = "INFO";
                 break;
         }
         if (message) {
-            formContext.ui.setFormNotification(message, messageType, "StageHint");
+            formContext.ui.setFormNotification(message, "INFO", "StageHint");
         }
     }
     function onLoad() {
-        var _a;
         console.log("Form loaded - setting up BPF locking");
         var formContext = getFormContext();
         if (formContext) {
+            setupBpfEvents(formContext);
             applyStageBasedLocking(formContext);
-            if ((_a = formContext.data) === null || _a === void 0 ? void 0 : _a.entity) {
-                formContext.data.entity.addOnSave(onSave);
-            }
         }
     }
     NCRLock.onLoad = onLoad;
-    function onSave() {
-        console.log("Form saved - reapplying BPF locking");
+    function setupBpfEvents(formContext) {
+        var _a;
+        if ((_a = formContext.data) === null || _a === void 0 ? void 0 : _a.process) {
+            try {
+                formContext.data.process.addOnStageChange(onStageChange);
+                console.log("BPF stage change event registered");
+            }
+            catch (error) {
+                console.log("BPF events not available, using fallback");
+                if (formContext.data.entity) {
+                    formContext.data.entity.addOnSave(onSave);
+                }
+            }
+        }
+    }
+    function onStageChange() {
+        console.log("BPF Stage changed detected");
         var formContext = getFormContext();
         if (formContext) {
             setTimeout(function () {
                 applyStageBasedLocking(formContext);
-            }, 100);
+            }, 300);
+        }
+    }
+    NCRLock.onStageChange = onStageChange;
+    function onSave() {
+        console.log("Form saved - checking for stage changes");
+        var formContext = getFormContext();
+        if (formContext) {
+            setTimeout(function () {
+                applyStageBasedLocking(formContext);
+            }, 200);
         }
     }
     NCRLock.onSave = onSave;
@@ -95,17 +112,15 @@ var NCRLock;
             case "Investigate":
                 reportFields.forEach(function (field) {
                     var control = formContext.getControl(field);
-                    if (control === null || control === void 0 ? void 0 : control.setDisabled) {
+                    if (control === null || control === void 0 ? void 0 : control.setDisabled)
                         control.setDisabled(true);
-                    }
                 });
                 break;
             case "Resolve":
                 __spreadArray(__spreadArray(__spreadArray([], reportFields, true), investigateFields, true), conditionalFields, true).forEach(function (field) {
                     var control = formContext.getControl(field);
-                    if (control === null || control === void 0 ? void 0 : control.setDisabled) {
+                    if (control === null || control === void 0 ? void 0 : control.setDisabled)
                         control.setDisabled(true);
-                    }
                 });
                 break;
             case "Close":
@@ -117,5 +132,6 @@ var NCRLock;
                 });
                 break;
         }
+        console.log("Field locking applied for stage:", stageName);
     }
 })(NCRLock || (NCRLock = {}));

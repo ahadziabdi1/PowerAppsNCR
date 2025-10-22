@@ -10,17 +10,45 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 var NCRLock;
 (function (NCRLock) {
     function getFormContext() {
-        if (window.parent && window.parent.Xrm && window.parent.Xrm.Page) {
-            return window.parent.Xrm.Page;
+        var _a, _b;
+        return (_b = (_a = window.parent) === null || _a === void 0 ? void 0 : _a.Xrm) === null || _b === void 0 ? void 0 : _b.Page;
+    }
+    function clearGuidanceMessages(formContext) {
+        formContext.ui.clearFormNotification("StageHint");
+    }
+    function showGuidanceMessage(formContext, stageName) {
+        clearGuidanceMessages(formContext);
+        var message = "";
+        var messageType = "INFO";
+        switch (stageName) {
+            case "Report":
+                message = "REPORT STAGE: Fill in Name, NC Type, Description, Reported By, and Assigned Manager.";
+                messageType = "INFO";
+                break;
+            case "Investigate":
+                message = "INVESTIGATE STAGE: Set Priority and Status (required). Additional fields appear based on NC Type.";
+                messageType = "INFO";
+                break;
+            case "Resolve":
+                message = "RESOLVE STAGE: Provide Resolution Notes (required) to document the corrective actions taken.";
+                messageType = "INFO";
+                break;
+            case "Close":
+                message = "CLOSE STAGE: Update Status to 'Closed' and verify all information is complete.";
+                messageType = "INFO";
+                break;
         }
-        return null;
+        if (message) {
+            formContext.ui.setFormNotification(message, messageType, "StageHint");
+        }
     }
     function onLoad() {
+        var _a;
         console.log("Form loaded - setting up BPF locking");
         var formContext = getFormContext();
         if (formContext) {
             applyStageBasedLocking(formContext);
-            if (formContext.data && formContext.data.entity) {
+            if ((_a = formContext.data) === null || _a === void 0 ? void 0 : _a.entity) {
                 formContext.data.entity.addOnSave(onSave);
             }
         }
@@ -37,7 +65,8 @@ var NCRLock;
     }
     NCRLock.onSave = onSave;
     function applyStageBasedLocking(formContext) {
-        if (!formContext.data || !formContext.data.process) {
+        var _a;
+        if (!((_a = formContext.data) === null || _a === void 0 ? void 0 : _a.process)) {
             console.log("No BPF process found");
             return;
         }
@@ -47,15 +76,18 @@ var NCRLock;
             var stageName = activeStage.getName();
             console.log("Current BPF stage:", stageName);
             lockFields(formContext, stageName);
+            showGuidanceMessage(formContext, stageName);
         }
     }
     function lockFields(formContext, stageName) {
-        console.log("Locking fields for stage:", stageName);
-        var reportFields = ["nwrg_name", "nwrg_description", "nwrg_reportedby", "nwrg_nctype", "nwrg_assignedmanager"];
+        var reportFields = ["nwrg_name", "nwrg_description", "nwrg_nctype", "nwrg_reportedby", "nwrg_assignedmanager"];
         var investigateFields = ["nwrg_priority", "nwrg_status"];
-        __spreadArray(__spreadArray([], reportFields, true), investigateFields, true).forEach(function (field) {
+        var conditionalFields = ["nwrg_safetyseverity", "nwrg_environmentalimpact", "nwrg_qualitystandard"];
+        var resolveFields = ["nwrg_resolutionnotes"];
+        var allFields = __spreadArray(__spreadArray(__spreadArray(__spreadArray([], reportFields, true), investigateFields, true), conditionalFields, true), resolveFields, true);
+        allFields.forEach(function (field) {
             var control = formContext.getControl(field);
-            if (control && control.setDisabled) {
+            if (control === null || control === void 0 ? void 0 : control.setDisabled) {
                 control.setDisabled(false);
             }
         });
@@ -63,21 +95,27 @@ var NCRLock;
             case "Investigate":
                 reportFields.forEach(function (field) {
                     var control = formContext.getControl(field);
-                    if (control && control.setDisabled) {
+                    if (control === null || control === void 0 ? void 0 : control.setDisabled) {
                         control.setDisabled(true);
                     }
                 });
                 break;
             case "Resolve":
-            case "Close":
-                __spreadArray(__spreadArray([], reportFields, true), investigateFields, true).forEach(function (field) {
+                __spreadArray(__spreadArray(__spreadArray([], reportFields, true), investigateFields, true), conditionalFields, true).forEach(function (field) {
                     var control = formContext.getControl(field);
-                    if (control && control.setDisabled) {
+                    if (control === null || control === void 0 ? void 0 : control.setDisabled) {
+                        control.setDisabled(true);
+                    }
+                });
+                break;
+            case "Close":
+                allFields.forEach(function (field) {
+                    var control = formContext.getControl(field);
+                    if ((control === null || control === void 0 ? void 0 : control.setDisabled) && field !== "nwrg_status") {
                         control.setDisabled(true);
                     }
                 });
                 break;
         }
-        console.log("Field locking applied for stage:", stageName);
     }
 })(NCRLock || (NCRLock = {}));

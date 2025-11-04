@@ -33,10 +33,10 @@ var ConditionalFormLogic;
                 safetyField === null || safetyField === void 0 ? void 0 : safetyField.setVisible(true);
                 break;
             case 799180001:
-                environmentalField === null || environmentalField === void 0 ? void 0 : environmentalField.setVisible(true);
+                qualityField === null || qualityField === void 0 ? void 0 : qualityField.setVisible(true);
                 break;
             case 799180002:
-                qualityField === null || qualityField === void 0 ? void 0 : qualityField.setVisible(true);
+                environmentalField === null || environmentalField === void 0 ? void 0 : environmentalField.setVisible(true);
                 break;
             case 799180003:
                 break;

@@ -39,10 +39,10 @@ namespace ConditionalFormLogic {
         safetyField?.setVisible(true);
         break;
       case 799180001: // Quality
-        environmentalField?.setVisible(true);
+        qualityField?.setVisible(true);
         break;
       case 799180002: // Environmental 
-        qualityField?.setVisible(true);
+        environmentalField?.setVisible(true);
         break;
       case 799180003: // Design
         // nothing to show

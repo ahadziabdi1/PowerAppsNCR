@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/xrm": "^9.0.87",
+    "@types/xrm": "^9.0.88",
     "typescript": "^5.9.3"
   }
 }

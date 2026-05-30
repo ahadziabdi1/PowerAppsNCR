@@ -6,3 +6,31 @@
 
 # MSBuild Binary and Structured Log
 *.binlog
+
+# Node
+node_modules/
+npm-debug.log*
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Mac system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Environment files
+.env
+.env.local
+
+# Logs
+logs/
+*.log
